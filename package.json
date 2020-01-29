@@ -1,6 +1,30 @@
 {
   "name": "apollo-graphql-postgres",
   "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT"
+  "main": "lib/index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "yarn build && (yarn type-check:watch & nodemon lib/index.js)",
+    "type-check:watch": "tsc --watch --preserveWatchOutput",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@babel/core": "^7.8.3",
+    "@babel/node": "^7.8.3",
+    "apollo-server": "^2.9.16",
+    "apollo-server-express": "^2.9.16",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "graphql": "^14.6.0",
+    "uuid": "^3.4.0"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.8.3",
+    "@types/cors": "^2.8.6",
+    "@types/express": "^4.17.2",
+    "@types/uuid": "^3.4.7",
+    "nodemon": "^2.0.2",
+    "typescript": "^3.7.5"
+  }
 }
