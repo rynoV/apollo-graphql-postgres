@@ -1,30 +1,76 @@
-import { IMessages } from '../models'
+import jwt from 'jsonwebtoken'
+
+import { IModels } from '../models'
+import { UserModel } from '../models/user'
+import { UserInputError, AuthenticationError } from 'apollo-server-express'
+
+async function createToken(user: UserModel, secret: string, expiresIn: string) {
+    const { username, id, email } = user
+    return await jwt.sign({ username, email, id }, secret, { expiresIn })
+}
 
 export interface IContext {
-    models: {
-        users: {}
-        messages: IMessages
-    }
-    me: any
+    models: IModels
+    me: { id: number }
+    secret: string
+}
+
+interface IUser {
+    username: string
+    email: string
+    password: string
 }
 
 export const userResolvers = {
     Query: {
-        me(_: any, __: any, context: IContext) {
-            return context.me
+        async me(_: any, __: any, { models, me }: IContext) {
+            if (!me) {
+                return null
+            }
+
+            return await models.User.findByPk(me.id)
         },
-        user(_: any, { id }: { id: number }, { models }: IContext) {
-            return models.users[id]
+        async user(_: any, { id }: { id: number }, { models }: IContext) {
+            return await models.User.findByPk(id)
         },
-        users(_: any, __: any, { models }: IContext) {
-            return Object.values(models.users)
+        async users(_: any, __: any, { models }: IContext) {
+            return await models.User.findAll()
+        },
+    },
+    Mutation: {
+        async signUp(
+            _: any,
+            { username, email, password }: IUser,
+            { models, secret }: IContext
+        ) {
+            const user = await models.User.create({ username, email, password })
+            return { token: createToken(user, secret, '30m') }
+        },
+        async signIn(
+            _: any,
+            { login, password }: { login: string; password: string },
+            { models, secret }: IContext
+        ) {
+            const user = await models.User.findByLogin(login)
+
+            if (!user) {
+                throw new UserInputError(
+                    'No user found with these credentials.'
+                )
+            }
+
+            const isValid = await user.validatePassword(password)
+
+            if (!isValid) {
+                throw new AuthenticationError('Invalid password.')
+            }
+
+            return { token: createToken(user, secret, '30m') }
         },
     },
     User: {
-        messages(user: { id: string }, _: any, { models }: IContext) {
-            return Object.values(models.messages).filter(
-                message => message.userId === user.id
-            )
+        async messages(user: { id: string }, _: any, { models }: IContext) {
+            return await models.Message.findAll({ where: { userId: user.id } })
         },
     },
 }
