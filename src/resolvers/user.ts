@@ -3,15 +3,17 @@ import jwt from 'jsonwebtoken'
 import { IModels } from '../models'
 import { UserModel } from '../models/user'
 import { UserInputError, AuthenticationError } from 'apollo-server-express'
+import { combineResolvers } from 'graphql-resolvers'
+import { isAdmin } from './authentication'
 
-async function createToken(user: UserModel, secret: string, expiresIn: string) {
-    const { username, id, email } = user
-    return await jwt.sign({ username, email, id }, secret, { expiresIn })
+function createToken(user: UserModel, secret: string, expiresIn: string) {
+    const { username, id, email, role } = user
+    return jwt.sign({ username, email, id, role }, secret, { expiresIn })
 }
 
 export interface IContext {
     models: IModels
-    me: { id: number }
+    me: UserModel
     secret: string
 }
 
@@ -30,7 +32,7 @@ export const userResolvers = {
 
             return await models.User.findByPk(me.id)
         },
-        async user(_: any, { id }: { id: number }, { models }: IContext) {
+        async user(_: any, { id }: { id: string }, { models }: IContext) {
             return await models.User.findByPk(id)
         },
         async users(_: any, __: any, { models }: IContext) {
@@ -67,6 +69,13 @@ export const userResolvers = {
 
             return { token: createToken(user, secret, '30m') }
         },
+        deleteUser: combineResolvers(isAdmin, async function(
+            _: any,
+            { id }: { id: string },
+            { models }: IContext
+        ) {
+            return await models.User.destroy({ where: { id } })
+        }),
     },
     User: {
         async messages(user: { id: string }, _: any, { models }: IContext) {

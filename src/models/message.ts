@@ -4,6 +4,7 @@ import { IModels } from '.'
 
 // We need to declare an interface for our model that is basically what our class would be
 interface MessageModel extends Model {
+    readonly userId: string
     readonly text: string
 }
 

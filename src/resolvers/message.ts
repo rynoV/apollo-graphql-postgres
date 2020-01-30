@@ -1,32 +1,38 @@
 import { IContext } from './user'
+import { combineResolvers } from 'graphql-resolvers'
+import { isAuthenticated, isMessageOwner } from './authentication'
 
 export const messageResolvers = {
     Query: {
         async messages(_: any, __: any, { models }: IContext) {
             return await models.Message.findAll()
         },
-        async message(_: any, { id }: { id: number }, { models }: IContext) {
+        async message(_: any, { id }: { id: string }, { models }: IContext) {
             return await models.Message.findByPk(id)
         },
     },
     Mutation: {
-        async createMessage(
+        createMessage: combineResolvers(isAuthenticated, async function(
             _: any,
             { text }: { text: string },
             { me, models }: IContext
         ) {
             return await models.Message.create({ text, userId: me.id })
-        },
-        async deleteMessage(
-            _: any,
-            { id }: { id: number },
-            { models }: IContext
-        ) {
-            return await models.Message.destroy({ where: { id } })
-        },
+        }),
+        deleteMessage: combineResolvers(
+            isAuthenticated,
+            isMessageOwner,
+            async function(
+                _: any,
+                { id }: { id: string },
+                { models }: IContext
+            ) {
+                return await models.Message.destroy({ where: { id } })
+            }
+        ),
         async updateMessage(
             _: any,
-            { id, text }: { id: number; text: string },
+            { id, text }: { id: string; text: string },
             { models }: IContext
         ) {
             return !!(await models.Message.update({ text }, { where: { id } }))
@@ -34,7 +40,7 @@ export const messageResolvers = {
     },
     Message: {
         async user(
-            { userId }: { userId: number },
+            { userId }: { userId: string },
             _: any,
             { models }: IContext
         ) {

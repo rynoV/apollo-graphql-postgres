@@ -2,6 +2,10 @@ import { Model, BuildOptions, Sequelize, DataTypes } from 'sequelize'
 import { IModels } from '.'
 import bcrypt from 'bcrypt'
 
+export const enum Roles {
+    ADMIN = 'ADMIN',
+}
+
 // We need to declare an interface for our model that is basically what our class would be
 export interface UserModel extends Model {
     generatePasswordHash(): Promise<string>
@@ -9,6 +13,7 @@ export interface UserModel extends Model {
     readonly username: string
     readonly email: string
     readonly id: string
+    readonly role: Roles
     password: string
 }
 
@@ -49,6 +54,9 @@ export default function user(
                 notEmpty: true,
                 len: [7, 42],
             },
+        },
+        role: {
+            type: dataTypes.STRING,
         },
     })
 

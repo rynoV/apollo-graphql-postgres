@@ -2,22 +2,47 @@
 import 'dotenv/config'
 import cors from 'cors'
 import express from 'express'
-import { ApolloServer } from 'apollo-server-express'
+import jwt from 'jsonwebtoken'
+import { ApolloServer, AuthenticationError } from 'apollo-server-express'
 import { schema } from './schemas'
 import { models, sequelize } from './models'
 import { resolvers } from './resolvers'
+import { Roles } from './models/user'
 
 const app = express()
 
 app.use(cors())
 
+/**
+ * If an x-token is provided, verifies that it is valid and returns the user corresponding to the token. Errors if it is invalid. Returns null if no token was provided.
+ * @param  {express.Request} req
+ */
+function getMe(req: express.Request) {
+    const token = req.headers['x-token'] as string | undefined
+
+    if (token) {
+        try {
+            return jwt.verify(token, process.env.SECRET as string)
+        } catch (e) {
+            throw new AuthenticationError(
+                'Your session expired. Sign in again.'
+            )
+        }
+    } else {
+        // throw new ApolloError('No token provided.')
+        console.warn('No token provided')
+        return null
+    }
+}
+
 const server = new ApolloServer({
     typeDefs: schema,
     resolvers,
-    context: async () => {
+    context: ({ req }) => {
+        const me = getMe(req)
         return {
             models,
-            me: await models.User.findByLogin('rynoV'),
+            me,
             secret: process.env.SECRET,
         }
     },
@@ -43,6 +68,7 @@ async function createUsersWithMessages() {
             username: 'rynoV',
             email: 'sieppertcalum@gmail.com',
             password: 'rynoVpw',
+            role: Roles.ADMIN,
             messages: [{ text: 'Hello Message' }],
         },
         { include: [models.Message] }
