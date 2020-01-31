@@ -32,7 +32,7 @@ export default function user(
     const User = <UserModelStatic>sequelize.define('user', {
         username: {
             type: dataTypes.STRING,
-            unique: true,
+            // unique: true,
             allowNull: false,
             validate: {
                 notEmpty: true,
@@ -40,7 +40,7 @@ export default function user(
         },
         email: {
             type: dataTypes.STRING,
-            unique: true,
+            // unique: true,
             allowNull: false,
             validate: {
                 notEmpty: true,

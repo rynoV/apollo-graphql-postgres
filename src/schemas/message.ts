@@ -14,5 +14,6 @@ export const messageSchema = gql`
         id: ID!
         text: String!
         user: User!
+        createdAt: Date!
     }
 `

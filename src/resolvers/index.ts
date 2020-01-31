@@ -1,5 +1,10 @@
-import { userResolvers } from './user'
+import { GraphQLDateTime } from 'graphql-iso-date'
 
+import { userResolvers } from './user'
 import { messageResolvers } from './message'
 
-export const resolvers = [userResolvers, messageResolvers]
+const customScalarResolver = {
+    Date: GraphQLDateTime,
+}
+
+export const resolvers = [customScalarResolver, userResolvers, messageResolvers]
