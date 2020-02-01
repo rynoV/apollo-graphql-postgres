@@ -3,7 +3,7 @@ import { UserModelStatic } from './user'
 import { MessageModelStatic } from './message'
 
 export const sequelize = new Sequelize(
-    process.env.DATABASE as string,
+    (process.env.TEST_DATABASE as string) || (process.env.DATABASE as string),
     process.env.DATABASE_USER as string,
     process.env.DATABASE_PASSWORD as string,
     { dialect: 'postgres' }

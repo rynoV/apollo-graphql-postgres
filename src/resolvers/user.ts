@@ -5,6 +5,7 @@ import { UserModel } from '../models/user'
 import { UserInputError, AuthenticationError } from 'apollo-server-express'
 import { combineResolvers } from 'graphql-resolvers'
 import { isAdmin } from './authentication'
+import DataLoader from 'dataloader'
 
 function createToken(user: UserModel, secret: string, expiresIn: string) {
     const { username, id, email, role } = user
@@ -15,6 +16,9 @@ export interface IContext {
     models: IModels
     me: UserModel
     secret: string
+    loaders: {
+        user: DataLoader<string, UserModel | undefined>
+    }
 }
 
 interface IUser {

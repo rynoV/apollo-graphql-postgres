@@ -4,11 +4,13 @@ import cors from 'cors'
 import express from 'express'
 import jwt from 'jsonwebtoken'
 import http from 'http'
+import DataLoader from 'dataloader'
 import { ApolloServer, AuthenticationError } from 'apollo-server-express'
 import { schema } from './schemas'
 import { models, sequelize } from './models'
 import { resolvers } from './resolvers'
-import { Roles } from './models/user'
+import { Roles, UserModel } from './models/user'
+import { loaders } from './loaders'
 
 const app = express()
 
@@ -41,7 +43,14 @@ const server = new ApolloServer({
     resolvers,
     context: ({ req, connection }) => {
         if (connection) {
-            return { models }
+            return {
+                models,
+                loaders: {
+                    user: new DataLoader<string, UserModel | undefined>(keys =>
+                        loaders.user.batchUsers(keys as string[], models)
+                    ),
+                },
+            }
         }
 
         if (req) {
@@ -50,6 +59,11 @@ const server = new ApolloServer({
                 models,
                 me,
                 secret: process.env.SECRET,
+                loaders: {
+                    user: new DataLoader<string, UserModel | undefined>(keys =>
+                        loaders.user.batchUsers(keys as string[], models)
+                    ),
+                },
             }
         }
 
@@ -62,10 +76,10 @@ server.applyMiddleware({ app, path: '/graphql' })
 const httpServer = http.createServer(app)
 server.installSubscriptionHandlers(httpServer)
 
-const eraseDatabaseOnSync = true
+const isTest = !!process.env.TEST_DATABASE
 
-sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
-    if (eraseDatabaseOnSync) {
+sequelize.sync({ force: isTest }).then(async () => {
+    if (isTest) {
         createUsersWithMessages(new Date())
     }
 

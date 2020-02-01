@@ -84,9 +84,10 @@ export const messageResolvers = {
         async user(
             { userId }: { userId: string },
             _: any,
-            { models }: IContext
+            { loaders }: IContext
         ) {
-            return models.User.findByPk(userId)
+            // Use the loaders to add this userId to the batch so that they can all be loaded at once.
+            return loaders.user.load(userId)
         },
     },
     Subscription: {
