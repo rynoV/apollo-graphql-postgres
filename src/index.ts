@@ -77,14 +77,16 @@ const httpServer = http.createServer(app)
 server.installSubscriptionHandlers(httpServer)
 
 const isTest = !!process.env.TEST_DATABASE
+// Use server's port if it's available
+const port = process.env.PORT || 8000
 
 sequelize.sync({ force: isTest }).then(async () => {
     if (isTest) {
         createUsersWithMessages(new Date())
     }
 
-    httpServer.listen({ port: 8000 }, () => {
-        console.log('Apollo Server on http://localhost:8000/graphql')
+    httpServer.listen({ port }, () => {
+        console.log(`Apollo Server on http://localhost:${port}/graphql`)
     })
 })
 
