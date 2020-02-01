@@ -4,7 +4,7 @@
     "main": "lib/index.js",
     "license": "MIT",
     "scripts": {
-        "start": "yarn build && node lib/index.js",
+        "start": "node lib/index.js",
         "dev": "ts-node-dev src/index.ts",
         "type-check:watch": "tsc --watch --preserveWatchOutput",
         "build": "rm -rf lib && tsc",
