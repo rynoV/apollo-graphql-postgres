@@ -1,0 +1,17 @@
+* apollo-graphql-postgres
+  Graphql server with Apollo and Postgres from [[this tutorial][https://www.robinwieruch.de/graphql-apollo-server-tutorial]].
+  - [x] Built with TypeScript
+  - [ ] Commented
+  - [ ] Tested
+
+** Use
+   - Ensure [[https://www.postgresql.org/download/linux/ubuntu/][Postgres]] is set up locally and create a ~.env~ file with:
+   #+begin_src
+DATABASE=postgres
+DATABASE_USER=postgres
+DATABASE_PASSWORD=postgres
+
+SECRET=myjsonsecretkey
+   #+end_src
+   (replacing with your credentials)
+   - [[https://devcenter.heroku.com/articles/heroku-cli][Install the Heroku CLI]]
