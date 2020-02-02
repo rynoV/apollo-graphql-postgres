@@ -1,11 +1,13 @@
 // This should be imported before any other JS that needs access to env vars
 import 'dotenv/config'
+
 import cors from 'cors'
 import express from 'express'
 import jwt from 'jsonwebtoken'
 import http from 'http'
 import DataLoader from 'dataloader'
 import { ApolloServer, AuthenticationError } from 'apollo-server-express'
+
 import { schema } from './schemas'
 import { models, sequelize } from './models'
 import { resolvers } from './resolvers'
@@ -14,6 +16,7 @@ import { loaders } from './loaders'
 
 const app = express()
 
+// Avoid cross origin errors
 app.use(cors())
 
 /**
@@ -32,33 +35,35 @@ function getMe(req: express.Request) {
             )
         }
     } else {
-        // throw new ApolloError('No token provided.')
-        console.warn('No token provided')
         return null
     }
 }
 
 const server = new ApolloServer({
+    // Define the data types in our application
     typeDefs: schema,
+    // Define how the data corresponding to each type should be retrieved
     resolvers,
+    // Pass values to our resolvers through context
     context: ({ req, connection }) => {
+        // The connection object comes when the request is a subscription
         if (connection) {
             return {
                 models,
-                loaders: {
-                    user: new DataLoader<string, UserModel | undefined>(keys =>
-                        loaders.user.batchUsers(keys as string[], models)
-                    ),
-                },
             }
         }
 
+        // The req object comes when the request is HTTP (Graphql queries and mutations)
         if (req) {
+            // Retrieve the current user
             const me = getMe(req)
             return {
+                // Give the resolvers access to our data storage mechanism
                 models,
                 me,
+                // So the resolvers can create/verify JWTs
                 secret: process.env.SECRET,
+                // Allow the resolvers to add their data to the batch
                 loaders: {
                     user: new DataLoader<string, UserModel | undefined>(keys =>
                         loaders.user.batchUsers(keys as string[], models)
@@ -71,8 +76,10 @@ const server = new ApolloServer({
     },
 })
 
+// Tell Apollo to use express and to use /graphql as the postfix for the url
 server.applyMiddleware({ app, path: '/graphql' })
 
+// Use the http package's server so that we can deal with subscriptions
 const httpServer = http.createServer(app)
 server.installSubscriptionHandlers(httpServer)
 
@@ -80,7 +87,9 @@ const isTest = !!process.env.TEST_DATABASE
 // Use server's port if it's available
 const port = process.env.PORT || 8000
 
+// Ensure the database is ready before we start the app, drop existing tables when we are testing
 sequelize.sync({ force: isTest }).then(async () => {
+    // Seed the database for testing
     if (isTest) {
         createUsersWithMessages(new Date())
     }
@@ -90,6 +99,10 @@ sequelize.sync({ force: isTest }).then(async () => {
     })
 })
 
+/**
+ * Seed the database with one admin and one non-admin user, each with messages created one second apart
+ * @param date
+ */
 async function createUsersWithMessages(date: Date) {
     await models.User.create(
         {

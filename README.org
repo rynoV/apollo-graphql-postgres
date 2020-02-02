@@ -17,7 +17,6 @@ SECRET=myjsonsecretkey
 *** Deploying
     - [[https://devcenter.heroku.com/articles/heroku-cli][Install the Heroku CLI]]
     - ~heroku login~
-    -
        #+begin_src shell
  heroku git:clone -a apollo-graphql-postgres
  cd apollo-graphql-postgres
