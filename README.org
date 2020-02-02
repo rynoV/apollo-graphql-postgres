@@ -14,4 +14,12 @@ DATABASE_PASSWORD=postgres
 SECRET=myjsonsecretkey
    #+end_src
    (replacing with your credentials)
-   - [[https://devcenter.heroku.com/articles/heroku-cli][Install the Heroku CLI]]
+*** Deploying
+    - [[https://devcenter.heroku.com/articles/heroku-cli][Install the Heroku CLI]]
+    - ~heroku login~
+    -
+       #+begin_src shell
+ heroku git:clone -a apollo-graphql-postgres
+ cd apollo-graphql-postgres
+       #+end_src
+    - ~yarn deploy~ after committing changes
