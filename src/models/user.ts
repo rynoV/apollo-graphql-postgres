@@ -28,7 +28,7 @@ export default function user(
     sequelize: Sequelize,
     dataTypes: typeof DataTypes
 ) {
-    // TS can't derive a proper class definition from a `.define` call, therefor we need to cast here.
+    // TS can't derive a proper class definition from a `.define` call, therefore we need to cast here.
     const User = <UserModelStatic>sequelize.define('user', {
         username: {
             type: dataTypes.STRING,
