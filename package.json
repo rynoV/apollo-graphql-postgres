@@ -15,7 +15,7 @@
         "heroku:logs": "heroku logs --tail"
     },
     "dependencies": {
-        "apollo-server": "^2.9.16",
+        "apollo-server": "^2.25.4",
         "apollo-server-express": "^2.9.16",
         "bcrypt": "^3.0.7",
         "cors": "^2.8.5",
